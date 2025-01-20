@@ -46,20 +46,23 @@ app.post("/enviar-correo", async (req, res) => {
   };
 
   try {
-    // Responder al cliente de inmediato (sin esperar la respuesta de Nodemailer)
+    // Responder al cliente de inmediato
     res.status(200).send({
       message: "Correo enviado exitosamente",
     });
 
-    // Enviar el correo en segundo plano (asíncrono)
+    // Enviar el correo en segundo plano (sin esperar la respuesta)
     await transporter.sendMail(mailOptions);
   } catch (error) {
     // Si ocurre un error, enviamos una respuesta indicando el fallo
     console.error("Error al enviar el correo:", error);
+    res.status(500).send({
+      error: "Hubo un problema al enviar el correo.",
+      details: error.message,
+    });
   }
-
-  
 });
+
 
 // Inicia el servidor
 app.listen(port, () => {
