@@ -7,7 +7,7 @@ const port = process.env.PORT || 8080;
 
 // Habilitar CORS para el frontend específico
 const corsOptions = {
-    origin: '*',  // Cambia esto por la URL de tu frontend
+    origin: 'https://www.servicesjmk.com',  // Cambia esto por la URL de tu frontend
     methods: "GET,POST",
     allowedHeaders: "Content-Type,Authorization",
   };
@@ -64,5 +64,5 @@ app.post("/enviar-correo", (req, res) => {
 
 // Inicia el servidor
 app.listen(port, () => {
-  console.log(`Servidor corriendo en servicesjmk-backend-production.up.railway.app:${port}`);
+  console.log(`https://servicesjmk-backend-production.up.railway.app/enviar-correo`);
 });
