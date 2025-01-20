@@ -40,7 +40,7 @@ app.post("/enviar-correo", async (req, res) => {
 
   const mailOptions = {
     from: "noreply@servicesjmk.com",
-    to: "aeua2000@gmail.com",
+    to: "juribe@servicesjmk.com",
     subject: `Nuevo mensaje de ${first_name} ${last_name}`,
     text: `Nombre: ${first_name} ${last_name}\nEmail: ${email}\nMensaje: ${message}`,
   };
