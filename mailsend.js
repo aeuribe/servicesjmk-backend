@@ -35,7 +35,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Ruta para recibir la solicitud y enviar el correo
-app.post("/enviar-correo", (req, res) => {
+app.post("/enviar-correo", async (req, res) => {
   const { first_name, last_name, email, message } = req.body;
 
   const mailOptions = {
@@ -45,20 +45,19 @@ app.post("/enviar-correo", (req, res) => {
     text: `Nombre: ${first_name} ${last_name}\nEmail: ${email}\nMensaje: ${message}`,
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      // Si ocurre un error, se devuelve tanto el mensaje de error como la información del error
-      return res.status(500).send({
-        error: "Error al enviar el correo",
-        details: error // Detalles completos del error
-      });
-    }
-    // Si el correo se envió correctamente, se devuelve el mensaje de éxito junto con la información de la respuesta
+  try {
+    // Responder al cliente de inmediato (sin esperar la respuesta de Nodemailer)
     res.status(200).send({
       message: "Correo enviado exitosamente",
-      info: info // Información sobre el envío del correo
     });
-  });
+
+    // Enviar el correo en segundo plano (asíncrono)
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    // Si ocurre un error, enviamos una respuesta indicando el fallo
+    console.error("Error al enviar el correo:", error);
+  }
+
   
 });
 
