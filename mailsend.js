@@ -87,7 +87,7 @@ app.post("/enviar-correo-robotics", async (req, res) => {
 
   const mailOptions = {
     from: `"JMK Robotics" <noreply@servicesjmk.com>`,
-    to: "info@servicesjmk.com",
+    to: ["juribe@servicesjmk.com", "kmendez@servicesjmk.com", "aeuribe@servicesjmk.com"],
     // to: "aeua2000@gmail.com",
     subject: `Solicitud de información de ${full_name} - JMK Robotics`,
     text: `Nombre: ${full_name}\nEmail: ${email}\nMensaje: ${message}`,
