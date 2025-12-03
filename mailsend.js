@@ -63,6 +63,7 @@ app.post("/enviar-correo-services", async (req, res) => {
     // to: "aeua2000@gmail.com",
     subject: `Solicitud de información de ${full_name} - Services JMK`,
     text: `Nombre: ${full_name}\nEmail: ${email}\nMensaje: ${message}`,
+    replyTo: email,
   };
 
   try {
@@ -87,11 +88,11 @@ app.post("/enviar-correo-robotics", async (req, res) => {
 
   const mailOptions = {
     from: `"JMK Robotics" <noreply@servicesjmk.com>`,
-    to: ["juribe@servicesjmk.com", "kmendez@servicesjmk.com", "aeuribe@servicesjmk.com"],
+    to: [ "juribe@servicesjmk.com", "kmendez@servicesjmk.com","aeuribe@servicesjmk.com"],
     // to: "aeua2000@gmail.com",
     subject: `Solicitud de información de ${full_name} - JMK Robotics`,
     text: `Nombre: ${full_name}\nEmail: ${email}\nMensaje: ${message}`,
-    // replyTo: email,
+    replyTo: email,
   };
 
   try {
