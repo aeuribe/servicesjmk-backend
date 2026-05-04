@@ -3,7 +3,6 @@ const nodemailer = require("nodemailer");
 const cors = require("cors");
 require("dotenv").config();
 
-
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -18,8 +17,6 @@ const corsOptions = {
   allowedHeaders: "Content-Type,Authorization",
 };
 app.use(cors(corsOptions));
-
-// Middleware para parsear JSON
 app.use(express.json());
 
 // --- Transporters por dominio ---
@@ -29,11 +26,9 @@ const transporterServices = nodemailer.createTransport({
   secure: false,
   auth: {
     user: "noreply@servicesjmk.com",
-    pass: process.env.MAIL_PASS, // variable de entorno
+    pass: process.env.MAIL_PASS, 
   },
   tls: { rejectUnauthorized: false },
-  logger: true,
-  debug: true,
 });
 
 const transporterRobotics = nodemailer.createTransport({
@@ -42,25 +37,51 @@ const transporterRobotics = nodemailer.createTransport({
   secure: false,
   auth: {
     user: "noreply@servicesjmk.com",
-    pass: process.env.MAIL_PASS // variable de entorno
+    pass: process.env.MAIL_PASS 
   },
   tls: { rejectUnauthorized: false },
-  logger: true,
-  debug: true,
 });
+
+// --- NUEVA FUNCIÓN: Validar Turnstile ---
+async function verifyTurnstileToken(token) {
+  const secretKey = process.env.TURNSTILE_SECRET_KEY; //
+  
+  const formData = new URLSearchParams();
+  formData.append('secret', secretKey);
+  formData.append('response', token);
+
+  try {
+    const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    const response = await fetch(url, {
+      body: formData,
+      method: 'POST',
+    });
+    const data = await response.json();
+    return data.success; // Retorna true si es humano, false si es bot o falla
+  } catch (error) {
+    console.error("Error al conectar con Cloudflare:", error);
+    return false;
+  }
+}
 
 // --- Ruta Services JMK ---
 app.post("/enviar-correo-services", async (req, res) => {
-  const { full_name, email, message } = req.body;
+  // Ahora también recibimos el "token" que enviará el frontend
+  const { full_name, email, message, token } = req.body;
 
-  if (!full_name || !email || !message) {
-    return res.status(400).send({ error: "Faltan campos obligatorios." });
+  if (!full_name || !email || !message || !token) {
+    return res.status(400).send({ error: "Faltan campos obligatorios o el token de seguridad." });
+  }
+
+  // Validamos el token antes de hacer cualquier otra cosa
+  const isHuman = await verifyTurnstileToken(token);
+  if (!isHuman) {
+    return res.status(403).send({ error: "Verificación de seguridad fallida. Por favor, intenta de nuevo." });
   }
 
   const mailOptions = {
     from: `"Services JMK" <noreply@servicesjmk.com>`,
     to: ["juribe@servicesjmk.com", "kmendez@servicesjmk.com", "aeuribe@servicesjmk.com"],
-    // to: "aeua2000@gmail.com",
     subject: `Solicitud de información de ${full_name} - Services JMK`,
     text: `Nombre: ${full_name}\nEmail: ${email}\nMensaje: ${message}`,
     replyTo: email,
@@ -73,23 +94,27 @@ app.post("/enviar-correo-services", async (req, res) => {
     console.error("Error al enviar el correo (Services):", error);
     res.status(500).send({
       error: "Hubo un problema al enviar el correo (Services).",
-      details: error.message,
     });
   }
 });
 
 // --- Ruta JMK Robotics ---
 app.post("/enviar-correo-robotics", async (req, res) => {
-  const { full_name, email, message } = req.body;
+  const { full_name, email, message, token } = req.body;
 
-  if (!full_name || !email || !message) {
-    return res.status(400).send({ error: "Faltan campos obligatorios." });
+  if (!full_name || !email || !message || !token) {
+    return res.status(400).send({ error: "Faltan campos obligatorios o el token de seguridad." });
+  }
+
+  // Validamos el token
+  const isHuman = await verifyTurnstileToken(token);
+  if (!isHuman) {
+    return res.status(403).send({ error: "Verificación de seguridad fallida. Por favor, intenta de nuevo." });
   }
 
   const mailOptions = {
     from: `"JMK Robotics" <noreply@servicesjmk.com>`,
     to: [ "juribe@servicesjmk.com", "kmendez@servicesjmk.com","aeuribe@servicesjmk.com"],
-    // to: "aeua2000@gmail.com",
     subject: `Solicitud de información de ${full_name} - JMK Robotics`,
     text: `Nombre: ${full_name}\nEmail: ${email}\nMensaje: ${message}`,
     replyTo: email,
@@ -102,7 +127,6 @@ app.post("/enviar-correo-robotics", async (req, res) => {
     console.error("Error al enviar el correo (Robotics):", error);
     res.status(500).send({
       error: "Hubo un problema al enviar el correo (Robotics).",
-      details: error.message,
     });
   }
 });
